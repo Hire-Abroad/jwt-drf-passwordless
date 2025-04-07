@@ -1,0 +1,10 @@
+asgiref==3.8.1
+Django==5.2
+djangorestframework==3.16.0
+djangorestframework_simplejwt==5.5.0
+importlib_resources==6.5.2
+-e git+https://github.com/Hire-Abroad/jwt-drf-passwordless.git@4f1c6b579ff63f7a570cf48b1cd381ffbf68268e#egg=jwt_passwordless
+packaging==24.2
+PyJWT==2.9.0
+sqlparse==0.5.3
+typing_extensions==4.13.1
