@@ -3,6 +3,7 @@ from django.db import models
 from django.conf import settings
 import string
 from django.utils.crypto import get_random_string
+from jwt_passwordless.settings import api_settings
 
 def generate_hex_token():
     return uuid.uuid1().hex
@@ -10,10 +11,12 @@ def generate_hex_token():
 
 def generate_numeric_token():
     """
-    Generate a random 6 digit string of numbers.
-    We use this formatting to allow leading 0s.
+    Generate a random numeric token of a specified length.
+    The length is determined by the PASSWORDLESS_TOKEN_LENGTH setting in the api_settings.
+    If the setting is not valid (not between 1 and 6), a default length of 6 is used.
     """
-    return get_random_string(length=6, allowed_chars=string.digits)
+    token_length = api_settings.PASSWORDLESS_TOKEN_LENGTH if api_settings.PASSWORDLESS_TOKEN_LENGTH > 0 and api_settings.PASSWORDLESS_TOKEN_LENGTH < 7 else 6
+    return get_random_string(length=token_length, allowed_chars=string.digits)
 
 
 class CallbackTokenManger(models.Manager):

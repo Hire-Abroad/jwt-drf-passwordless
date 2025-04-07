@@ -94,7 +94,10 @@ DEFAULTS = {
     # Performance settings
     'PASSWORDLESS_USE_EMAIL_CACHE': False,
     'PASSWORDLESS_EMAIL_CACHE_TIMEOUT': 60 * 60,
-    'PASSWORDLESS_DEMO_USERS': {}
+    'PASSWORDLESS_DEMO_USERS': {},
+    
+    # Token length settings
+    'PASSWORDLESS_TOKEN_LENGTH': 6,
 }
 
 # List of settings that may be in string import notation.
