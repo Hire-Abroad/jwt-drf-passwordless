@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+djangorestframework = "*"
+twilio = "*"
+
+[dev-packages]
+flake8 = "*"
+pandoc = "*"
+pep8 = "*"
+pytest= "*"
+pytest-cov= "*"
+pytest-django= "*"
+requests = {version = ">=2.20.0"}
+setuptools-markdown = "*"
+twine = "*"
+urllib3 = {version = ">=1.23"}
+wheel = "*"
+tox = "*"
+
+[requires]
+python_version = "3.7"
