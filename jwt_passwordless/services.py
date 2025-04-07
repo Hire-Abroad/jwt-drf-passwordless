@@ -1,6 +1,6 @@
 from django.utils.module_loading import import_string
-from drfpasswordless.settings import api_settings
-from drfpasswordless.utils import (
+from jwt_passwordless.settings import api_settings
+from jwt_passwordless.utils import (
     create_callback_token_for_user,
 )
 

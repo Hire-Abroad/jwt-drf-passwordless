@@ -6,8 +6,8 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
-from drfpasswordless.models import CallbackToken
-from drfpasswordless.settings import api_settings
+from jwt_passwordless.models import CallbackToken
+from jwt_passwordless.settings import api_settings
 
 
 logger = logging.getLogger(__name__)
@@ -26,11 +26,11 @@ def authenticate_by_token(callback_token):
         return token.user
 
     except CallbackToken.DoesNotExist:
-        logger.debug("drfpasswordless: Challenged with a callback token that doesn't exist.")
+        logger.debug("jwt_passwordless: Challenged with a callback token that doesn't exist.")
     except User.DoesNotExist:
-        logger.debug("drfpasswordless: Authenticated user somehow doesn't exist.")
+        logger.debug("jwt_passwordless: Authenticated user somehow doesn't exist.")
     except PermissionDenied:
-        logger.debug("drfpasswordless: Permission denied while authenticating.")
+        logger.debug("jwt_passwordless: Permission denied while authenticating.")
 
     return None
 
@@ -157,57 +157,37 @@ def send_email_with_callback_token(user, email_token, **kwargs):
         return False
 
 
-def send_sms_with_callback_token(user, mobile_token, **kwargs):
-    """
-    Sends a SMS to user.mobile via Twilio.
-
-    Passes silently without sending in test environment.
-    """
-    if api_settings.PASSWORDLESS_TEST_SUPPRESSION is True:
-        # we assume success to prevent spamming SMS during testing.
-
-        # even if you have suppression on– you must provide a number if you have mobile selected.
-        if api_settings.PASSWORDLESS_MOBILE_NOREPLY_NUMBER is None:
-            return False
-            
-        return True
-    
-    base_string = kwargs.get('mobile_message', api_settings.PASSWORDLESS_MOBILE_MESSAGE)
-
-    try:
-        if api_settings.PASSWORDLESS_MOBILE_NOREPLY_NUMBER:
-            # We need a sending number to send properly
-
-            from twilio.rest import Client
-            twilio_client = Client(os.environ['TWILIO_ACCOUNT_SID'], os.environ['TWILIO_AUTH_TOKEN'])
-
-            to_number = getattr(user, api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME)
-            if to_number.__class__.__name__ == 'PhoneNumber':
-                to_number = to_number.__str__()
-
-            twilio_client.messages.create(
-                body=base_string % mobile_token.key,
-                to=to_number,
-                from_=api_settings.PASSWORDLESS_MOBILE_NOREPLY_NUMBER
-            )
-            return True
-        else:
-            logger.debug("Failed to send token sms. Missing PASSWORDLESS_MOBILE_NOREPLY_NUMBER.")
-            return False
-    except ImportError:
-        logger.debug("Couldn't import Twilio client. Is twilio installed?")
-        return False
-    except KeyError:
-        logger.debug("Couldn't send SMS."
-                  "Did you set your Twilio account tokens and specify a PASSWORDLESS_MOBILE_NOREPLY_NUMBER?")
-    except Exception as e:
-        logger.debug("Failed to send token SMS to user: {}. "
-                  "Possibly no mobile number on user object or the twilio package isn't set up yet. "
-                  "Number entered was {}".format(user.id, getattr(user, api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME)))
-        logger.debug(e)
-        return False
-
-
 def create_authentication_token(user):
     """ Default way to create an authentication token"""
     return Token.objects.get_or_create(user=user)
+
+
+def create_jwt_token_for_user(user):
+    """Create a JWT token for the given user"""
+    from rest_framework_simplejwt.tokens import RefreshToken
+    from .settings import api_settings
+    
+    # If JWT is not enabled, fall back to original token creation
+    if not api_settings.PASSWORDLESS_USE_JWT:
+        return create_authentication_token(user)
+    
+    try:
+        refresh = RefreshToken.for_user(user)
+        
+        # Add custom claims if needed
+        if hasattr(user, 'email'):
+            refresh['email'] = user.email
+            
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, True
+        
+    except Exception as e:
+        # Log the error
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error creating JWT token: {str(e)}")
+        
+        # Fall back to original token creation
+        return create_authentication_token(user)

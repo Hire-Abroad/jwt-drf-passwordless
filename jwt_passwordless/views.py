@@ -4,9 +4,9 @@ from rest_framework import parsers, renderers, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated 
 from rest_framework.views import APIView
-from drfpasswordless.models import CallbackToken
-from drfpasswordless.settings import api_settings
-from drfpasswordless.serializers import (
+from jwt_passwordless.models import CallbackToken
+from jwt_passwordless.settings import api_settings
+from jwt_passwordless.serializers import (
     EmailAuthSerializer,
     MobileAuthSerializer,
     CallbackTokenAuthSerializer,
@@ -14,7 +14,7 @@ from drfpasswordless.serializers import (
     EmailVerificationSerializer,
     MobileVerificationSerializer,
 )
-from drfpasswordless.services import TokenService
+from jwt_passwordless.services import TokenService
 
 logger = logging.getLogger(__name__)
 
@@ -156,11 +156,28 @@ class AbstractBaseObtainAuthToken(APIView):
 
 class ObtainAuthTokenFromCallbackToken(AbstractBaseObtainAuthToken):
     """
-    This is a duplicate of rest_framework's own ObtainAuthToken method.
-    Instead, this returns an Auth Token based on our callback token and source.
+    Overridden to support JWT tokens
     """
-    permission_classes = (AllowAny,)
     serializer_class = CallbackTokenAuthSerializer
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.validated_data["user"]
+            from django.utils.module_loading import import_string
+            from .settings import api_settings
+            
+            token_creator = import_string(api_settings.PASSWORDLESS_AUTH_TOKEN_CREATOR)
+            token_obj, _ = token_creator(user)
+
+            if token_obj:
+                TokenSerializer = import_string(api_settings.PASSWORDLESS_AUTH_TOKEN_SERIALIZER)
+                token_serializer = TokenSerializer(data=token_obj, context={"request": request})
+                if token_serializer.is_valid():
+                    return Response(token_serializer.data, status=status.HTTP_200_OK)
+            
+            return Response({"detail": "Couldn't log you in. Try again later."}, 
+                           status=status.HTTP_400_BAD_REQUEST)
 
 
 class VerifyAliasFromCallbackToken(APIView):

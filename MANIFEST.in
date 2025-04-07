@@ -1,4 +1,4 @@
 include README.rst LICENSE
-recursive-include drfpasswordless/templates *
+recursive-include jwt_passwordless/templates *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]

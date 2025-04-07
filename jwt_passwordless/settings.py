@@ -75,21 +75,26 @@ DEFAULTS = {
     # Automatically send verification email or sms when a user changes their alias.
     'PASSWORDLESS_AUTO_SEND_VERIFICATION_TOKEN': False,
 
-    # What function is called to construct an authentication tokens when
-    # exchanging a passwordless token for a real user auth token.
-    'PASSWORDLESS_AUTH_TOKEN_CREATOR': 'drfpasswordless.utils.create_authentication_token',
-
-    # What function is called to construct a serializer for drf tokens when
-    # exchanging a passwordless token for a real user auth token.
-    'PASSWORDLESS_AUTH_TOKEN_SERIALIZER': 'drfpasswordless.serializers.TokenResponseSerializer',
-
-    # A dictionary of demo user's primary key mapped to their static pin
-    'PASSWORDLESS_DEMO_USERS': {},
-    'PASSWORDLESS_EMAIL_CALLBACK': 'drfpasswordless.utils.send_email_with_callback_token',
-    'PASSWORDLESS_SMS_CALLBACK': 'drfpasswordless.utils.send_sms_with_callback_token',
-
+    'PASSWORDLESS_EMAIL_CALLBACK': 'jwt_passwordless.utils.send_email_with_callback_token',
+    
     # Token Generation Retry Count
-    'PASSWORDLESS_TOKEN_GENERATION_ATTEMPTS': 3
+    'PASSWORDLESS_TOKEN_GENERATION_ATTEMPTS': 3,
+    
+    # New JWT settings
+    'PASSWORDLESS_USE_JWT': True,
+    'PASSWORDLESS_AUTH_TOKEN_CREATOR': 'jwt_passwordless.utils.create_jwt_token_for_user',
+    'PASSWORDLESS_AUTH_TOKEN_SERIALIZER': 'jwt_passwordless.serializers.JWTTokenResponseSerializer',
+    
+    # Secondary email settings (placeholder for future)
+    'PASSWORDLESS_USE_SECONDARY_EMAIL': False,
+    'PASSWORDLESS_USER_SECONDARY_EMAIL_FIELD_NAME': 'secondary_email',
+    'PASSWORDLESS_USER_SECONDARY_EMAIL_VERIFIED_FIELD_NAME': 'secondary_email_verified',
+    'PASSWORDLESS_EMAIL_LOOKUP_STRATEGY': 'PRIMARY_ONLY',
+    
+    # Performance settings
+    'PASSWORDLESS_USE_EMAIL_CACHE': False,
+    'PASSWORDLESS_EMAIL_CACHE_TIMEOUT': 60 * 60,
+    'PASSWORDLESS_DEMO_USERS': {}
 }
 
 # List of settings that may be in string import notation.

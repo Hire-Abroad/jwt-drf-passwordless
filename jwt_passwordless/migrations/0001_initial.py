@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import drfpasswordless.models
+import jwt_passwordless.models
 import uuid
 
 
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('to_alias', models.CharField(blank=True, max_length=40)),
                 ('to_alias_type', models.CharField(blank=True, max_length=20)),
-                ('key', models.CharField(default=drfpasswordless.models.generate_numeric_token, max_length=6, unique=True)),
+                ('key', models.CharField(default=jwt_passwordless.models.generate_numeric_token, max_length=6, unique=True)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={

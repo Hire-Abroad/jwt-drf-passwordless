@@ -15,7 +15,7 @@ PYTEST_ARGS = {
     'fast': ['tests', '-q'],
 }
 
-FLAKE8_ARGS = ['drfpasswordless', 'tests', '--ignore=E501']
+FLAKE8_ARGS = ['jwt_passwordless', 'tests', '--ignore=E501']
 
 
 sys.path.append(os.path.dirname(__file__))

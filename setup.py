@@ -13,20 +13,20 @@ from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
 
-# Package meta-data.
-name = 'drfpasswordless'
 
-NAME = 'drfpasswordless'
-DESCRIPTION = 'Passwordless auth for Django Rest Framework Token Authentication.'
+NAME = 'jwt-passwordless'
+DESCRIPTION = 'Passwordless authentication for Django using JWT and supporting multiple emails per user.'
 URL = 'https://github.com/aaronn/django-rest-framework-passwordless'
-EMAIL = 'email@0xaaron.com'
-AUTHOR = 'Aaron N.'
+EMAIL = 'contact@hireabroad.com'
+AUTHOR = 'Hire Abroad'
 REQUIRES_PYTHON = '>=3'
-VERSION = None
+VERSION = '0.1.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'Django', 'djangorestframework'
+    'Django>=2.2',
+    'djangorestframework>=3.10',
+    'djangorestframework-simplejwt>=4.4.0',
 ]
 
 # The rest you shouldn't have to touch too much :)

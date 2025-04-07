@@ -3,10 +3,10 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.dispatch import receiver
 from django.db.models import signals
-from drfpasswordless.models import CallbackToken
-from drfpasswordless.models import generate_numeric_token
-from drfpasswordless.settings import api_settings
-from drfpasswordless.services import TokenService
+from jwt_passwordless.models import CallbackToken
+from jwt_passwordless.models import generate_numeric_token
+from jwt_passwordless.settings import api_settings
+from jwt_passwordless.services import TokenService
 
 logger = logging.getLogger(__name__)
 
@@ -105,10 +105,10 @@ def update_alias_verification(sender, instance, **kwargs):
                             success = TokenService.send_token(instance, 'email', CallbackToken.TOKEN_TYPE_VERIFY, **message_payload)
 
                             if success:
-                                logger.info('drfpasswordless: Successfully sent email on updated address: %s'
+                                logger.info('jwt_passwordless: Successfully sent email on updated address: %s'
                                             % instance_email)
                             else:
-                                logger.info('drfpasswordless: Failed to send email to updated address: %s'
+                                logger.info('jwt_passwordless: Failed to send email to updated address: %s'
                                             % instance_email)
 
                 except User.DoesNotExist:
@@ -137,10 +137,10 @@ def update_alias_verification(sender, instance, **kwargs):
                             success = TokenService.send_token(instance, 'mobile', CallbackToken.TOKEN_TYPE_VERIFY, **message_payload)
 
                             if success:
-                                logger.info('drfpasswordless: Successfully sent SMS on updated mobile: %s'
+                                logger.info('jwt_passwordless: Successfully sent SMS on updated mobile: %s'
                                             % instance_mobile)
                             else:
-                                logger.info('drfpasswordless: Failed to send SMS to updated mobile: %s'
+                                logger.info('jwt_passwordless: Failed to send SMS to updated mobile: %s'
                                             % instance_mobile)
 
                 except User.DoesNotExist:

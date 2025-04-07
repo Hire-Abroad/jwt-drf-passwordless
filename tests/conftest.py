@@ -46,7 +46,7 @@ def pytest_configure():
             'django.contrib.staticfiles',
             'rest_framework',
             'rest_framework.authtoken',
-            'drfpasswordless',
+            'jwt_passwordless',
             'tests',
         ),
         PASSWORD_HASHERS=(

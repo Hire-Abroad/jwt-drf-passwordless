@@ -1,6 +1,6 @@
-from drfpasswordless.settings import api_settings
+from jwt_passwordless.settings import api_settings
 from django.urls import path
-from drfpasswordless.views import (
+from jwt_passwordless.views import (
      ObtainEmailCallbackToken,
      ObtainMobileCallbackToken,
      ObtainAuthTokenFromCallbackToken,
@@ -9,7 +9,7 @@ from drfpasswordless.views import (
      ObtainMobileVerificationCallbackToken,
 )
 
-app_name = 'drfpasswordless'
+app_name = 'jwt_passwordless'
 
 urlpatterns = [
      path(api_settings.PASSWORDLESS_AUTH_PREFIX + 'email/', ObtainEmailCallbackToken.as_view(), name='auth_email'),

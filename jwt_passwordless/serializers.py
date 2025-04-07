@@ -5,9 +5,9 @@ from django.core.exceptions import PermissionDenied
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from drfpasswordless.models import CallbackToken
-from drfpasswordless.settings import api_settings
-from drfpasswordless.utils import verify_user_alias, validate_token_age
+from jwt_passwordless.models import CallbackToken
+from jwt_passwordless.settings import api_settings
+from jwt_passwordless.utils import verify_user_alias, validate_token_age
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -264,25 +264,25 @@ class CallbackTokenVerificationSerializer(AbstractBaseCallbackTokenSerializer):
                 # Mark this alias as verified
                 success = verify_user_alias(user, token)
                 if success is False:
-                    logger.debug("drfpasswordless: Error verifying alias.")
+                    logger.debug("jwt_passwordless: Error verifying alias.")
 
                 attrs['user'] = user
                 return attrs
             else:
                 msg = _('This token is invalid. Try again later.')
-                logger.debug("drfpasswordless: User token mismatch when verifying alias.")
+                logger.debug("jwt_passwordless: User token mismatch when verifying alias.")
 
         except CallbackToken.DoesNotExist:
             msg = _('We could not verify this alias.')
-            logger.debug("drfpasswordless: Tried to validate alias with bad token.")
+            logger.debug("jwt_passwordless: Tried to validate alias with bad token.")
             pass
         except User.DoesNotExist:
             msg = _('We could not verify this alias.')
-            logger.debug("drfpasswordless: Tried to validate alias with bad user.")
+            logger.debug("jwt_passwordless: Tried to validate alias with bad user.")
             pass
         except PermissionDenied:
             msg = _('Insufficient permissions.')
-            logger.debug("drfpasswordless: Permission denied while validating alias.")
+            logger.debug("jwt_passwordless: Permission denied while validating alias.")
             pass
 
         raise serializers.ValidationError(msg)
@@ -301,3 +301,18 @@ class TokenResponseSerializer(serializers.Serializer):
     key = serializers.CharField(write_only=True)
 
 
+class JWTTokenResponseSerializer(serializers.Serializer):
+    """
+    JWT token response serializer
+    """
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+    
+    def to_representation(self, instance):
+        from .settings import api_settings
+        
+        if not api_settings.PASSWORDLESS_USE_JWT:
+            # If JWT is disabled, use the original serializer
+            return TokenResponseSerializer().to_representation(instance)
+            
+        return super().to_representation(instance)

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('drfpasswordless', '0002_auto_20200122_0424'),
+        ('jwt_passwordless', '0002_auto_20200122_0424'),
     ]
 
     operations = [
