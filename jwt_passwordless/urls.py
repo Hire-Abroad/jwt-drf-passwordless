@@ -8,7 +8,8 @@ from jwt_passwordless.views import (
      ObtainEmailVerificationCallbackToken,
      ObtainMobileVerificationCallbackToken,
 )
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
+
 
 app_name = 'jwt_passwordless'
 
@@ -19,5 +20,6 @@ urlpatterns = [
      path(api_settings.PASSWORDLESS_VERIFY_PREFIX + 'email/', ObtainEmailVerificationCallbackToken.as_view(), name='verify_email'),
      path(api_settings.PASSWORDLESS_VERIFY_PREFIX + 'mobile/', ObtainMobileVerificationCallbackToken.as_view(), name='verify_mobile'),
      path(api_settings.PASSWORDLESS_VERIFY_PREFIX, VerifyAliasFromCallbackToken.as_view(), name='verify_token'),
-     path('jwt/refresh/', TokenRefreshView.as_view(), name='token_refresh'),    
+     path('jwt/refresh/', TokenRefreshView.as_view(), name='token_refresh'), 
+     path('jwt/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),   
 ]
