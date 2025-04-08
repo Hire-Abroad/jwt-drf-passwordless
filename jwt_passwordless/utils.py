@@ -5,7 +5,6 @@ from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
-from rest_framework.authtoken.models import Token
 from jwt_passwordless.models import CallbackToken
 from jwt_passwordless.settings import api_settings
 
@@ -157,19 +156,12 @@ def send_email_with_callback_token(user, email_token, **kwargs):
         return False
 
 
-def create_authentication_token(user):
-    """ Default way to create an authentication token"""
-    return Token.objects.get_or_create(user=user)
-
 
 def create_jwt_token_for_user(user):
     """Create a JWT token for the given user"""
     from rest_framework_simplejwt.tokens import RefreshToken
     from .settings import api_settings
     
-    # If JWT is not enabled, fall back to original token creation
-    if not api_settings.PASSWORDLESS_USE_JWT:
-        return create_authentication_token(user)
     
     try:
         refresh = RefreshToken.for_user(user)
@@ -189,5 +181,4 @@ def create_jwt_token_for_user(user):
         logger = logging.getLogger(__name__)
         logger.error(f"Error creating JWT token: {str(e)}")
         
-        # Fall back to original token creation
-        return create_authentication_token(user)
+        return None, False

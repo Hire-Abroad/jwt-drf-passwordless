@@ -308,11 +308,3 @@ class JWTTokenResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
     refresh = serializers.CharField()
     
-    def to_representation(self, instance):
-        from .settings import api_settings
-        
-        if not api_settings.PASSWORDLESS_USE_JWT:
-            # If JWT is disabled, use the original serializer
-            return TokenResponseSerializer().to_representation(instance)
-            
-        return super().to_representation(instance)

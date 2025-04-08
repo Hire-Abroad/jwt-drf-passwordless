@@ -81,7 +81,6 @@ DEFAULTS = {
     'PASSWORDLESS_TOKEN_GENERATION_ATTEMPTS': 3,
     
     # New JWT settings
-    'PASSWORDLESS_USE_JWT': True,
     'PASSWORDLESS_AUTH_TOKEN_CREATOR': 'jwt_passwordless.utils.create_jwt_token_for_user',
     'PASSWORDLESS_AUTH_TOKEN_SERIALIZER': 'jwt_passwordless.serializers.JWTTokenResponseSerializer',
     
