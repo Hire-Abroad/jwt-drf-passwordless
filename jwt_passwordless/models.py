@@ -13,9 +13,12 @@ def generate_numeric_token():
     """
     Generate a random numeric token of a specified length.
     The length is determined by the PASSWORDLESS_TOKEN_LENGTH setting in the api_settings.
-    If the setting is not valid (not between 1 and 6), a default length of 6 is used.
+    If the setting is less than 3, a minimum length of 3 is used.
+    If the setting is greater than 6, a maximum length of 6 is used.
     """
-    token_length = api_settings.PASSWORDLESS_TOKEN_LENGTH if api_settings.PASSWORDLESS_TOKEN_LENGTH > 0 and api_settings.PASSWORDLESS_TOKEN_LENGTH < 7 else 6
+    token_length = api_settings.PASSWORDLESS_TOKEN_LENGTH
+    token_length = max(3, min(6, token_length))
+    
     return get_random_string(length=token_length, allowed_chars=string.digits)
 
 
