@@ -90,9 +90,6 @@ DEFAULTS = {
     'PASSWORDLESS_USER_SECONDARY_EMAIL_VERIFIED_FIELD_NAME': 'secondary_email_verified',
     'PASSWORDLESS_EMAIL_LOOKUP_STRATEGY': 'PRIMARY_ONLY',
     
-    # Performance settings
-    'PASSWORDLESS_USE_EMAIL_CACHE': False,
-    'PASSWORDLESS_EMAIL_CACHE_TIMEOUT': 60 * 60,
     'PASSWORDLESS_DEMO_USERS': {},
     
     # Token length settings
