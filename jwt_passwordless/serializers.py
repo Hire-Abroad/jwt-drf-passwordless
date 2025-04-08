@@ -75,7 +75,7 @@ class AbstractBaseAliasAuthenticationSerializer(serializers.Serializer):
 class EmailAuthSerializer(AbstractBaseAliasAuthenticationSerializer):
     @property
     def alias_type(self):
-        return 'email'
+        return api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME
 
     email = serializers.EmailField()
 
@@ -83,7 +83,7 @@ class EmailAuthSerializer(AbstractBaseAliasAuthenticationSerializer):
 class MobileAuthSerializer(AbstractBaseAliasAuthenticationSerializer):
     @property
     def alias_type(self):
-        return 'mobile'
+        return api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME
 
     phone_regex = RegexValidator(regex=r'^\+[1-9]\d{1,14}$',
                                  message="Mobile number must be entered in the format:"
@@ -139,13 +139,13 @@ class AbstractBaseAliasVerificationSerializer(serializers.Serializer):
 class EmailVerificationSerializer(AbstractBaseAliasVerificationSerializer):
     @property
     def alias_type(self):
-        return 'email'
+        return api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME
 
 
 class MobileVerificationSerializer(AbstractBaseAliasVerificationSerializer):
     @property
     def alias_type(self):
-        return 'mobile'
+        return api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME
 
 
 """
