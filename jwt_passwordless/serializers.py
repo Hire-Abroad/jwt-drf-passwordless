@@ -77,7 +77,11 @@ class EmailAuthSerializer(AbstractBaseAliasAuthenticationSerializer):
     def alias_type(self):
         return api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME
 
-    email = serializers.EmailField()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Dynamically add the email field with the customized field name
+        self.fields[api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME] = serializers.EmailField()
+        
 
 
 class MobileAuthSerializer(AbstractBaseAliasAuthenticationSerializer):
@@ -88,64 +92,18 @@ class MobileAuthSerializer(AbstractBaseAliasAuthenticationSerializer):
     phone_regex = RegexValidator(regex=r'^\+[1-9]\d{1,14}$',
                                  message="Mobile number must be entered in the format:"
                                          " '+999999999'. Up to 15 digits allowed.")
-    mobile = serializers.CharField(validators=[phone_regex], max_length=17)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Dynamically add the mobile field with the customized field name
+        self.fields[api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME] = serializers.CharField(
+            validators=[self.phone_regex], max_length=17
+        )
 
 
-"""
-Verification
-"""
 
 
-class AbstractBaseAliasVerificationSerializer(serializers.Serializer):
-    """
-    Abstract class that returns a callback token based on the field given
-    Returns a token if valid, None or a message if not.
-    """
-    @property
-    def alias_type(self):
-        # The alias type, either email or mobile
-        raise NotImplementedError
 
-    def validate(self, attrs):
-
-        msg = _('There was a problem with your request.')
-
-        if self.alias_type:
-            # Get request.user
-            # Get their specified valid endpoint
-            # Validate
-
-            request = self.context["request"]
-            if request and hasattr(request, "user"):
-                user = request.user
-                if user:
-                    if not user.is_active:
-                        # If valid, return attrs so we can create a token in our logic controller
-                        msg = _('User account is disabled.')
-
-                    else:
-                        if hasattr(user, self.alias_type):
-                            # Has the appropriate alias type
-                            attrs['user'] = user
-                            return attrs
-                        else:
-                            msg = _('This user doesn\'t have an %s.' % self.alias_type)
-            raise serializers.ValidationError(msg)
-        else:
-            msg = _('Missing %s.') % self.alias_type
-            raise serializers.ValidationError(msg)
-
-
-class EmailVerificationSerializer(AbstractBaseAliasVerificationSerializer):
-    @property
-    def alias_type(self):
-        return api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME
-
-
-class MobileVerificationSerializer(AbstractBaseAliasVerificationSerializer):
-    @property
-    def alias_type(self):
-        return api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME
 
 
 """
@@ -170,16 +128,25 @@ class AbstractBaseCallbackTokenSerializer(serializers.Serializer):
     Returns a user if valid, None or a message if not.
     """
     phone_regex = RegexValidator(regex=r'^\+[1-9]\d{1,14}$',
-                                 message="Mobile number must be entered in the format:"
-                                         " '+999999999'. Up to 15 digits allowed.")
+                                message="Mobile number must be entered in the format:"
+                                        " '+999999999'. Up to 15 digits allowed.")
 
-    email = serializers.EmailField(required=False)  # Needs to be required=false to require both.
-    mobile = serializers.CharField(required=False, validators=[phone_regex], max_length=17)
     token = TokenField(min_length=3, max_length=6, validators=[token_age_validator])
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Dynamically add the email field with the customized field name
+        self.fields[api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME] = serializers.EmailField(required=False)
+        
+        # Dynamically add the mobile field with the customized field name
+        self.fields[api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME] = serializers.CharField(
+            required=False, validators=[self.phone_regex], max_length=17
+        )
+
     def validate_alias(self, attrs):
-        email = attrs.get('email', None)
-        mobile = attrs.get('mobile', None)
+        # Use the customized field names from settings to get values
+        email = attrs.get(api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME, None)
+        mobile = attrs.get(api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME, None)
 
         if email and mobile:
             raise serializers.ValidationError()
@@ -188,12 +155,11 @@ class AbstractBaseCallbackTokenSerializer(serializers.Serializer):
             raise serializers.ValidationError()
 
         if email:
-            return 'email', email
+            return api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME, email
         elif mobile:
-            return 'mobile', mobile
+            return api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME, mobile
 
         return None
-
 
 class CallbackTokenAuthSerializer(AbstractBaseCallbackTokenSerializer):
 
