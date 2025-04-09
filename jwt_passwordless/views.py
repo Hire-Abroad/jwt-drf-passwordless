@@ -10,9 +10,7 @@ from jwt_passwordless.serializers import (
     EmailAuthSerializer,
     MobileAuthSerializer,
     CallbackTokenAuthSerializer,
-    CallbackTokenVerificationSerializer,
-    EmailVerificationSerializer,
-    MobileVerificationSerializer,
+    CallbackTokenVerificationSerializer
 )
 from jwt_passwordless.services import TokenService
 
@@ -97,36 +95,6 @@ class ObtainMobileCallbackToken(AbstractBaseObtainCallbackToken):
     message_payload = {"mobile_message": mobile_message}
 
 
-class ObtainEmailVerificationCallbackToken(AbstractBaseObtainCallbackToken):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = EmailVerificationSerializer
-    success_response = "A verification token has been sent to your email."
-    failure_response = "Unable to email you a verification code. Try again later."
-
-    alias_type = "email"
-    token_type = CallbackToken.TOKEN_TYPE_VERIFY
-
-    email_subject = api_settings.PASSWORDLESS_EMAIL_VERIFICATION_SUBJECT
-    email_plaintext = api_settings.PASSWORDLESS_EMAIL_VERIFICATION_PLAINTEXT_MESSAGE
-    email_html = api_settings.PASSWORDLESS_EMAIL_VERIFICATION_TOKEN_HTML_TEMPLATE_NAME
-    message_payload = {
-        "email_subject": email_subject,
-        "email_plaintext": email_plaintext,
-        "email_html": email_html
-    }
-
-
-class ObtainMobileVerificationCallbackToken(AbstractBaseObtainCallbackToken):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = MobileVerificationSerializer
-    success_response = "We texted you a verification code."
-    failure_response = "Unable to send you a verification code. Try again later."
-
-    alias_type = "mobile"
-    token_type = CallbackToken.TOKEN_TYPE_VERIFY
-
-    mobile_message = api_settings.PASSWORDLESS_MOBILE_MESSAGE
-    message_payload = {"mobile_message": mobile_message}
 
 
 class AbstractBaseObtainAuthToken(APIView):
@@ -180,18 +148,3 @@ class ObtainAuthTokenFromCallbackToken(AbstractBaseObtainAuthToken):
                            status=status.HTTP_400_BAD_REQUEST)
 
 
-class VerifyAliasFromCallbackToken(APIView):
-    """
-    This verifies an alias on correct callback token entry using the same logic as auth.
-    Should be refactored at some point.
-    """
-    serializer_class = CallbackTokenVerificationSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={"user_id": self.request.user.id})
-        if serializer.is_valid(raise_exception=True):
-            return Response({"detail": "Alias verified."}, status=status.HTTP_200_OK)
-        else:
-            logger.error("Couldn't verify unknown user. Errors on serializer: {}".format(serializer.error_messages))
-
-        return Response({"detail": "We couldn't verify this alias. Try again later."}, status.HTTP_400_BAD_REQUEST)

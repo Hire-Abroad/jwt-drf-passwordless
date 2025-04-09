@@ -4,9 +4,7 @@ from jwt_passwordless.settings import api_settings
 from jwt_passwordless.views import (ObtainEmailCallbackToken,
                                    ObtainMobileCallbackToken,
                                    ObtainAuthTokenFromCallbackToken,
-                                   VerifyAliasFromCallbackToken,
-                                   ObtainEmailVerificationCallbackToken,
-                                   ObtainMobileVerificationCallbackToken, )
+                                    )
 
 app_name = 'jwt_passwordless'
 

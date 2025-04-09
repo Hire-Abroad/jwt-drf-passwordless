@@ -76,6 +76,7 @@ DEFAULTS = {
     'PASSWORDLESS_AUTO_SEND_VERIFICATION_TOKEN': False,
 
     'PASSWORDLESS_EMAIL_CALLBACK': 'jwt_passwordless.utils.send_email_with_callback_token',
+    'PASSWORDLESS_SMS_CALLBACK': 'jwt_passwordless.utils.send_sms_with_callback_token',
     
     # Token Generation Retry Count
     'PASSWORDLESS_TOKEN_GENERATION_ATTEMPTS': 3,
