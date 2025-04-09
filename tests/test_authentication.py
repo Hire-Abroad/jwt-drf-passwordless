@@ -63,10 +63,35 @@ class EmailSignUpCallbackTokenTests(APITestCase):
 
         # Verify no token was created for the user
         self.assertEqual(CallbackToken.objects.filter(user=user, is_active=True).exists(), 0)
+    
+    def test_email_signup_with_custom_email_field(self):
+        """
+        Test that a user can be created with a custom email field name.
+        """
+        api_settings.PASSWORDLESS_REGISTER_NEW_USERS = True
+        api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME = 'secondary_email'
+        self.email_field_name = api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME
+        email = 'test@example.com'
+        data = {self.email_field_name: email}
+
+        # Verify user doesn't exist yet
+        user = User.objects.filter(**{self.email_field_name: 'test@example.com'}).first()
+        # Make sure our user isn't None, meaning the user was created.
+        self.assertEqual(user, None)
+
+        # verify a new user was created with serializer
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        user = User.objects.get(**{self.email_field_name: 'test@example.com'})
+        self.assertNotEqual(user, None)
+
+        # Verify a token exists for the user
+        self.assertEqual(CallbackToken.objects.filter(user=user, is_active=True).exists(), 1)
 
     def tearDown(self):
         api_settings.PASSWORDLESS_EMAIL_NOREPLY_ADDRESS = DEFAULTS['PASSWORDLESS_EMAIL_NOREPLY_ADDRESS']
         api_settings.PASSWORDLESS_REGISTER_NEW_USERS = DEFAULTS['PASSWORDLESS_REGISTER_NEW_USERS']
+        api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME = DEFAULTS['PASSWORDLESS_USER_EMAIL_FIELD_NAME']
 
 
 class EmailLoginCallbackTokenTests(APITestCase):
@@ -169,10 +194,36 @@ class EmailLoginCallbackTokenTests(APITestCase):
         # Basic validation that these appear to be JWT tokens
         self.assertEqual(len(challenge_response.data['access'].split('.')), 3)
         self.assertEqual(len(challenge_response.data['refresh'].split('.')), 3)
+    
+    def test_email_auth_success_with_custom_email_field(self):
+        """
+        Test that a user can be authenticated with a custom email field name.
+        """
+        api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME = 'secondary_email'
+        self.email_field_name = api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME
+        data = {self.email_field_name: self.email}
+        setattr(self.user, self.email_field_name, self.email)
+        setattr(self.user, 'email', None)
+        self.user.save()
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        callback_token = CallbackToken.objects.filter(user=self.user, is_active=True).first()
+        challenge_data = {self.email_field_name: self.email, 'token': callback_token}
+
+        challenge_response = self.client.post(self.challenge_url, challenge_data)
+        self.assertEqual(challenge_response.status_code, status.HTTP_200_OK)
+
+        self.assertIn('access', challenge_response.data)
+        self.assertIn('refresh', challenge_response.data)
+        
+        self.assertEqual(len(challenge_response.data['access'].split('.')), 3)
+        self.assertEqual(len(challenge_response.data['refresh'].split('.')), 3)
 
     def tearDown(self):
         api_settings.PASSWORDLESS_AUTH_TYPES = DEFAULTS['PASSWORDLESS_AUTH_TYPES']
         api_settings.PASSWORDLESS_EMAIL_NOREPLY_ADDRESS = DEFAULTS['PASSWORDLESS_EMAIL_NOREPLY_ADDRESS']
+        api_settings.PASSWORDLESS_USER_EMAIL_FIELD_NAME = DEFAULTS['PASSWORDLESS_USER_EMAIL_FIELD_NAME']
         self.user.delete()
 
 
@@ -236,12 +287,37 @@ class MobileSignUpCallbackTokenTests(APITestCase):
 
         # Verify no token was created for the user
         self.assertEqual(CallbackToken.objects.filter(user=user, is_active=True).exists(), 0)
+    
+    def test_mobile_signup_with_custom_mobile_field(self):
+        """
+        Test that a user can be created with a custom mobile field name.
+        """
+        api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME = 'secondary_mobile'
+        self.mobile_field_name = api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME
+        
+        mobile = '+15551234567'
+        data = {self.mobile_field_name: mobile}
+
+        # Verify user doesn't exist yet
+        user = User.objects.filter(**{self.mobile_field_name: '+15551234567'}).first()
+        # Make sure our user isn't None, meaning the user was created.
+        self.assertEqual(user, None)
+
+        # verify a new user was created with serializer
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        user = User.objects.get(**{self.mobile_field_name: '+15551234567'})
+        self.assertNotEqual(user, None)
+
+        # Verify a token exists for the user
+        self.assertEqual(CallbackToken.objects.filter(user=user, is_active=True).exists(), 1)
 
     def tearDown(self):
         api_settings.PASSWORDLESS_TEST_SUPPRESSION = DEFAULTS['PASSWORDLESS_TEST_SUPPRESSION']
         api_settings.PASSWORDLESS_AUTH_TYPES = DEFAULTS['PASSWORDLESS_AUTH_TYPES']
         api_settings.PASSWORDLESS_REGISTER_NEW_USERS = DEFAULTS['PASSWORDLESS_REGISTER_NEW_USERS']
         api_settings.PASSWORDLESS_MOBILE_NOREPLY_NUMBER = DEFAULTS['PASSWORDLESS_MOBILE_NOREPLY_NUMBER']
+        api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME = DEFAULTS['PASSWORDLESS_USER_MOBILE_FIELD_NAME']
 
 
 def create_custom_jwt_token(user):
@@ -374,8 +450,38 @@ class MobileLoginCallbackTokenTests(APITestCase):
         self.assertEqual(len(challenge_response.data['access'].split('.')), 3)
         self.assertEqual(len(challenge_response.data['refresh'].split('.')), 3)
 
+    def test_mobile_auth_success_with_custom_mobile_field(self):
+        """
+        Test that a user can be authenticated with a custom mobile field name.
+        """
+        api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME = 'secondary_mobile'
+        self.mobile_field_name = api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME
+        
+        mobile = '+15551234567'
+        data = {self.mobile_field_name: mobile}
+        setattr(self.user, self.mobile_field_name, self.mobile)
+        setattr(self.user, 'mobile', None)
+        self.user.save()
+        
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        callback_token = CallbackToken.objects.filter(user=self.user, is_active=True).first()
+        challenge_data = {self.mobile_field_name: mobile, 'token': callback_token}
+
+        challenge_response = self.client.post(self.challenge_url, challenge_data)
+        self.assertEqual(challenge_response.status_code, status.HTTP_200_OK)
+
+        self.assertIn('access', challenge_response.data)
+        self.assertIn('refresh', challenge_response.data)
+        
+        self.assertEqual(len(challenge_response.data['access'].split('.')), 3)
+        self.assertEqual(len(challenge_response.data['refresh'].split('.')), 3)
+
     def tearDown(self):
         api_settings.PASSWORDLESS_TEST_SUPPRESSION = DEFAULTS['PASSWORDLESS_TEST_SUPPRESSION']
         api_settings.PASSWORDLESS_AUTH_TYPES = DEFAULTS['PASSWORDLESS_AUTH_TYPES']
         api_settings.PASSWORDLESS_MOBILE_NOREPLY_NUMBER = DEFAULTS['PASSWORDLESS_MOBILE_NOREPLY_NUMBER']
+        api_settings.PASSWORDLESS_REGISTER_NEW_USERS = DEFAULTS['PASSWORDLESS_REGISTER_NEW_USERS']
+        api_settings.PASSWORDLESS_USER_MOBILE_FIELD_NAME = DEFAULTS['PASSWORDLESS_USER_MOBILE_FIELD_NAME']
         self.user.delete()

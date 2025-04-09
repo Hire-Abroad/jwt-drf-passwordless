@@ -10,9 +10,13 @@ phone_regex = RegexValidator(regex=r'^\+[1-9]\d{1,14}$',
 
 class CustomUser(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True, blank=True, null=True)
+    # Added to test the custom email field name
+    secondary_email = models.EmailField(max_length=255, unique=True, blank=True, null=True)
     email_verified = models.BooleanField(default=False)
 
     mobile = models.CharField(validators=[phone_regex], max_length=17, unique=True, blank=True, null=True)
+    # Added to test the custom mobile field name
+    secondary_mobile = models.CharField(validators=[phone_regex], max_length=17, unique=True, blank=True, null=True)
     mobile_verified = models.BooleanField(default=False)
 
     objects = BaseUserManager()
