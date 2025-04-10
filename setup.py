@@ -16,7 +16,7 @@ from setuptools import find_packages, setup, Command
 
 NAME = 'jwt-passwordless'
 DESCRIPTION = 'Passwordless authentication for Django using JWT and supporting multiple emails per user.'
-URL = 'https://github.com/aaronn/django-rest-framework-passwordless'
+URL = 'https://github.com/Hire-Abroad/jwt-passwordless'
 EMAIL = 'contact@hireabroad.com'
 AUTHOR = 'Hire Abroad'
 REQUIRES_PYTHON = '>=3'

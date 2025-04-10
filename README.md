@@ -1,6 +1,6 @@
 # JWT Passwordless
 
-[![PyPI version](https://badge.fury.io/py/jwt-passwordless.svg)](https://badge.fury.io/py/jwt-passwordless)
+[![PyPI version](https://badge.fury.io/py/jwt-passwordless.svg)](https://pypi.org/project/jwt-passwordless/)
 
 
 A Django REST Framework package that makes implementing passwordless authentication with JWT tokens simple and secure.
