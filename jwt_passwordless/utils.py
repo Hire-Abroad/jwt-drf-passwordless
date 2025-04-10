@@ -7,6 +7,7 @@ from django.template import loader
 from django.utils import timezone
 from jwt_passwordless.models import CallbackToken
 from jwt_passwordless.settings import api_settings
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 logger = logging.getLogger(__name__)
@@ -207,9 +208,6 @@ def send_sms_with_callback_token(user, mobile_token, **kwargs):
 
 def create_jwt_token_for_user(user):
     """Create a JWT token for the given user"""
-    from rest_framework_simplejwt.tokens import RefreshToken
-    from .settings import api_settings
-    
     
     try:
         refresh = RefreshToken.for_user(user)
