@@ -20,7 +20,7 @@ URL = 'https://github.com/Hire-Abroad/jwt-passwordless'
 EMAIL = 'contact@hireabroad.com'
 AUTHOR = 'Hire Abroad'
 REQUIRES_PYTHON = '>=3'
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
