@@ -7,7 +7,7 @@ from jwt_passwordless.utils import (
 
 class TokenService(object):
     @staticmethod
-    def send_token(user, alias_type, token_type, **message_payload):
+    def send_token(user, alias_type, token_type, request=None, **message_payload):
         token = create_callback_token_for_user(user, alias_type, token_type)
         send_action = None
 
@@ -18,5 +18,5 @@ class TokenService(object):
         elif alias_type == 'mobile':
             send_action = import_string(api_settings.PASSWORDLESS_SMS_CALLBACK)
         # Send to alias
-        success = send_action(user, token, **message_payload)
+        success = send_action(user, token, request, **message_payload)
         return success
