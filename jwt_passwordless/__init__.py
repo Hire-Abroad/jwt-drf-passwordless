@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 __title__ = 'jwt_passwordless'
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __author__ = 'Hire Abroad'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2025 Hire Abroad'
