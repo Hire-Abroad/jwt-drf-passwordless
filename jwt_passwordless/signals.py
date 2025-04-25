@@ -7,6 +7,8 @@ from jwt_passwordless.models import CallbackToken
 from jwt_passwordless.models import generate_numeric_token
 from jwt_passwordless.settings import api_settings
 from jwt_passwordless.services import TokenService
+from datetime import timedelta
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,8 @@ def invalidate_previous_tokens(sender, instance, created, **kwargs):
 
     if isinstance(instance, CallbackToken):
         CallbackToken.objects.active().filter(user=instance.user, type=instance.type).exclude(id=instance.id).update(is_active=False)
+        # invalidate also all other tokens of the same type that are older than the expiration time
+        CallbackToken.objects.active().filter(type=instance.type).exclude(id=instance.id).filter(created_at__lt=timezone.now() - timedelta(seconds=api_settings.PASSWORDLESS_TOKEN_EXPIRE_TIME)).update(is_active=False)
 
 
 @receiver(signals.pre_save, sender=CallbackToken)

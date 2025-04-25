@@ -158,7 +158,7 @@ def send_email_with_callback_token(user, email_token, request=None, **kwargs):
         logger.debug(e)
         return False
 
-def send_sms_with_callback_token(user, mobile_token, **kwargs):
+def send_sms_with_callback_token(user, mobile_token, request=None, **kwargs):
     """
     Sends a SMS to user.mobile via Twilio.
 
