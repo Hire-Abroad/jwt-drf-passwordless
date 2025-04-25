@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from jwt_passwordless.models import CallbackToken
 from jwt_passwordless.settings import api_settings, DEFAULTS
+from datetime import timedelta
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -25,6 +27,12 @@ class SignalsTest(TestCase):
         
         self.user = User.objects.create(
             **{self.email_field_name: self.email, self.mobile_field_name: self.mobile}
+        )
+        self.user_2 = User.objects.create(
+            **{self.email_field_name: 'user2@example.com', self.mobile_field_name: '+15559876544'}
+        )
+        self.user_3 = User.objects.create(
+            **{self.email_field_name: 'user3@example.com', self.mobile_field_name: '+15552345678'}
         )
         
         # Set up settings for tests
@@ -58,7 +66,47 @@ class SignalsTest(TestCase):
         self.assertFalse(token1.is_active)
         # The second token should still be active
         self.assertTrue(token2.is_active)
-
+    
+    def test_invalidate_previous_tokens_for_other_users_that_created_before_expiration_time(self):
+        # Create tokens for user_2 and user_3
+        user_2_token = CallbackToken.objects.create(
+            user=self.user_2,
+            key='123456',
+            type=CallbackToken.TOKEN_TYPE_AUTH,
+            is_active=True
+        )
+        
+        user_3_token = CallbackToken.objects.create(
+            user=self.user_3,
+            key='654321',
+            type=CallbackToken.TOKEN_TYPE_AUTH,
+            is_active=True
+        )
+        
+        # Manually update created_at to be older than expiration time
+        expired_time = timezone.now() - timedelta(seconds=api_settings.PASSWORDLESS_TOKEN_EXPIRE_TIME + 120)
+        CallbackToken.objects.filter(pk=user_2_token.pk).update(created_at=expired_time)
+        CallbackToken.objects.filter(pk=user_3_token.pk).update(created_at=expired_time)
+        
+        # Create a new token for the current user which should trigger the signal
+        current_user_token = CallbackToken.objects.create(
+            user=self.user,
+            key='111222',
+            type=CallbackToken.TOKEN_TYPE_AUTH,
+            is_active=True
+        )
+        
+        # Refresh the tokens from the database
+        user_2_token.refresh_from_db()
+        user_3_token.refresh_from_db()
+        current_user_token.refresh_from_db()
+        
+        # The tokens for user_2 and user_3 should be inactive because they're expired
+        self.assertFalse(user_2_token.is_active)
+        self.assertFalse(user_3_token.is_active)
+        # The current user token should still be active
+        self.assertTrue(current_user_token.is_active)
+    
     def test_demo_user_tokens_not_invalidated(self):
         """Test that tokens for demo users are not invalidated."""
         # Set up demo user
